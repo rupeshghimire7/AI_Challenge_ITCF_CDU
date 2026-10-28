@@ -1,0 +1,122 @@
+STAGE 1: PARSE, HARMONISE, MERGE (scripts/prepare_data.py)
+
+1. Raw files
+file                                          md5
+--------------------------------------------  ------------
+DATA/HF/ABSA16_Laptops_Train_SB1_v2.xml       b51abebd494d
+DATA/HF/EN_LAPT_SB1_TEST_.xml.gold            b712fe56b186
+DATA/HF/ABSA16_Laptops_Train_English_SB2.xml  b5edbbccd3a6
+DATA/HF/EN_LAPT_SB2_TEST.xml.gold             3120cea6061f
+DATA/GITHUB/laptop_quad_train.tsv             1e9a852c85cf
+DATA/GITHUB/laptop_quad_test.tsv              3193c291feec
+
+2. Counts vs the published numbers (D2.1)
+corpus           reviews  sentences  opinions  check
+---------------  -------  ---------  --------  -----
+semeval16 train  450      2500           2909  ok
+acos train                2934           4172  ok
+sb2 train        395                     2082  ok
+semeval16 test   80       808             801  ok
+acos test                 816            1161  ok
+sb2 test         80                       545  ok
+
+3. Harmonisation and structural repairs
+corpus           step                                                                                       count
+---------------  -----------------------------------------------------------------------------------------  -----
+acos/test        category renamed FANS&COOLING#GENERAL -> FANS_COOLING#GENERAL                                  2
+acos/test        category renamed FANS&COOLING#OPERATION_PERFORMANCE -> FANS_COOLING#OPERATION_PERFORMANCE      2
+acos/test        category renamed FANS&COOLING#QUALITY -> FANS_COOLING#QUALITY                                  2
+acos/test        category renamed Out_Of_Scope#DESIGN_FEATURES -> OUT_OF_SCOPE#DESIGN_FEATURES                  1
+acos/test        exact duplicate of a acos test sentence removed                                                1
+acos/test        exact duplicate of a semeval16 test sentence removed                                           4
+acos/test        identical opinion inside a sentence collapsed                                                  5
+acos/test        opinion merged into the row with the same category and polarity (terms joined with ' | ')    162
+acos/test        tokenisation spacing undone                                                                  787
+acos/train       category renamed FANS&COOLING#DESIGN_FEATURES -> FANS_COOLING#DESIGN_FEATURES                  2
+acos/train       category renamed FANS&COOLING#GENERAL -> FANS_COOLING#GENERAL                                  5
+acos/train       category renamed FANS&COOLING#OPERATION_PERFORMANCE -> FANS_COOLING#OPERATION_PERFORMANCE     10
+acos/train       category renamed FANS&COOLING#QUALITY -> FANS_COOLING#QUALITY                                  3
+acos/train       category renamed Out_Of_Scope#GENERAL -> OUT_OF_SCOPE#GENERAL                                  3
+acos/train       category renamed Out_Of_Scope#OPERATION_PERFORMANCE -> OUT_OF_SCOPE#OPERATION_PERFORMANCE      2
+acos/train       category renamed Out_Of_Scope#USABILITY -> OUT_OF_SCOPE#USABILITY                              1
+acos/train       exact duplicate of a acos train sentence removed                                              11
+acos/train       exact duplicate of a semeval16 train sentence removed                                         20
+acos/train       identical opinion inside a sentence collapsed                                                 14
+acos/train       opinion merged into the row with the same category and polarity (terms joined with ' | ')    509
+acos/train       sentence annotated over two lines merged (acos/train/69 + acos/train/70)                       1
+acos/train       tokenisation spacing undone                                                                 2834
+sb2/test         identical review-level opinion collapsed                                                       1
+semeval16/test   HTML entities decoded (the test XML is double-escaped: &amp;#34; -> ")                        21
+semeval16/train  exact duplicate of a semeval16 train sentence removed                                         19
+
+hyphen evidence: 137 hyphenated words in SemEval; 19 recurring ACOS 'x - y' pairs
+
+4. Exact duplicates removed (same split, same text, same labels)
+split  removed                                          kept copy                                        text
+-----  -----------------------------------------------  -----------------------------------------------  ----------------------------------------------------------------
+train  semeval16/train/4:0                              semeval16/train/77:0                             Waited on getting this computer, but it has been a great change.
+train  semeval16/train/4:1                              semeval16/train/77:1                             Ease of use is just one of the benefits I love about my Mac.
+train  semeval16/train/308:7                            semeval16/train/282:0                            So far, so good.
+train  semeval16/train/82:1                             semeval16/train/350:3                            I love it!
+train  semeval16/train/166:5                            semeval16/train/165:2                            No viruses.
+train  semeval16/train/7:2                              semeval16/train/230:0                            I Hate it!
+train  semeval16/train/70:3                             semeval16/train/350:3                            I LOVE IT!
+train  semeval16/train/11:6                             semeval16/train/350:3                            I love it!
+train  semeval16/train/B00KMRGF28_310_A1PZTEOLNEN3ER:3  semeval16/train/343:10                           Thank you!
+train  semeval16/train/B0096VDM8G_74_A3JYJCVU8D2L54:0   semeval16/train/196:4                            I love this computer!
+train  semeval16/train/B00FU83YWS_35_A2OBBREWRCQJX:0    semeval16/train/B00FU83YWS_203_A9GCSPVVE7ML0:0   Great Laptop!
+train  semeval16/train/B00KMRGF28_112_AG0H7UG6OX2GU:4   semeval16/train/373:2                            great product.
+train  semeval16/train/B00FU83YWS_141_A3Q6JY8ZJAVPCW:3  semeval16/train/85:14                            Highly recommended.
+train  semeval16/train/B00KMRGF28_172_A1RJ2J18DI98FG:3  semeval16/train/343:10                           Thank you!
+train  semeval16/train/B0096VDM8G_88_A32QNAMOSUG1HS:0   semeval16/train/247:4                            LOVE IT!
+train  semeval16/train/B00D7Z84OY_48_A2XVST4DRWHUO2:0   semeval16/train/B00KMRGF28_168_A3TKNSIFQ0WOEE:5  I love this laptop.
+train  semeval16/train/B00FU83YWS_219_A1Y4ZXHXI6KT7B:0  semeval16/train/B00KMRGF28_168_A3TKNSIFQ0WOEE:5  I love this laptop!
+train  semeval16/train/B00KMRGF28_106_AGNDXNERJ5L83:0   semeval16/train/B00KMRGF28_168_A3TKNSIFQ0WOEE:5  I love this laptop.
+train  semeval16/train/B00KB3MXH4_22_A106YGESUYA4BP:0   semeval16/train/B00KMRGF28_168_A3TKNSIFQ0WOEE:0  This laptop is amazing!
+train  acos/train/301                                   semeval16/train/B00KMRGF28_168_A3TKNSIFQ0WOEE:5  i love this laptop!
+train  acos/train/358                                   semeval16/train/350:3                            i *love* it!
+train  acos/train/369                                   semeval16/train/B00KMRGF28_13_A29X881WVJ8402:0   it was easy to set up.
+train  acos/train/392                                   semeval16/train/247:4                            love it!
+train  acos/train/450                                   semeval16/train/350:3                            i love it.
+train  acos/train/451                                   semeval16/train/247:4                            love it!
+train  acos/train/603                                   semeval16/train/247:4                            love it!
+train  acos/train/604                                   semeval16/train/B00KMRGF28_212_A22IB8C8G5YVZD:0  nice laptop!
+train  acos/train/608                                   semeval16/train/28:3                             i like it
+train  acos/train/618                                   semeval16/train/247:4                            love it.
+train  acos/train/649                                   semeval16/train/B00KMRGF28_168_A3TKNSIFQ0WOEE:5  i love this laptop!
+train  acos/train/655                                   semeval16/train/B00KMRGF28_13_A29X881WVJ8402:0   it was easy to set up.
+train  acos/train/672                                   semeval16/train/363:0                            i am very happy with this laptop.
+train  acos/train/719                                   acos/train/511                                   she loves it!
+train  acos/train/1082                                  acos/train/571                                   love love love this laptop!
+train  acos/train/1091                                  acos/train/734                                   fantastic computer!
+train  acos/train/1169                                  semeval16/train/B00KMRGF28_168_A3TKNSIFQ0WOEE:5  i love this laptop.
+train  acos/train/1186                                  semeval16/train/196:4                            i love this computer.
+train  acos/train/1245                                  semeval16/train/247:4                            love it.
+train  acos/train/1247                                  semeval16/train/350:3                            i love it.
+train  acos/train/1257                                  acos/train/461                                   works great!
+train  acos/train/1407                                  semeval16/train/319:2                            this is a great computer.
+train  acos/train/1643                                  acos/train/48                                    + good battery life
+train  acos/train/1669                                  acos/train/490                                   this is a great laptop.
+train  acos/train/1988                                  acos/train/468                                   this is a great notebook.
+train  acos/train/2021                                  acos/train/490                                   this is a great laptop.
+train  acos/train/2273                                  semeval16/train/B00KMRGF28_216_A2VZ7R8QTA0QXE:0  extremely slow.
+train  acos/train/2507                                  acos/train/954                                   the keyboard is good.
+train  acos/train/2613                                  semeval16/train/373:2                            great product!
+train  acos/train/2629                                  acos/train/2469                                  i absolutely love this chromebook.
+train  acos/train/2837                                  acos/train/540                                   nice keyboard.
+test   acos/test/140                                    semeval16/test/B0146DD02G_18_ANONYMOUS:2         great battery life.
+test   acos/test/142                                    semeval16/test/B0074703CM_145_ANONYMOUS:4        i would recommend it to anyone.
+test   acos/test/326                                    semeval16/test/B0146DD02G_19_ANONYMOUS:0         love this computer!
+test   acos/test/344                                    semeval16/test/B0074703CM_21_ANONYMOUS:0         great computer!
+test   acos/test/729                                    acos/test/727                                    i love this chromebook!
+
+5. Output
+split  source     sentences in  duplicates removed  sentences out  opinion rows
+-----  ---------  ------------  ------------------  -------------  ------------
+train  semeval16          2500                  19           2481          2892
+train  acos               2933                  31           2902          3618
+test   semeval16           808                   0            808           801
+test   acos                816                   5            811           989
+
+rows: train 6969, test 2025
+train sentences with an identical text in test (removed in stage 2): 22

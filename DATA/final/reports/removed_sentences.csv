@@ -1,0 +1,33 @@
+step,split,source,sentence_id,reason,matched_sentence_id,similarity,text
+C3,train,acos,acos/train/24,ACOS copies of one text disagree on labels (all copies dropped),acos/train/529,1.0,long battery life
+C3,train,acos,acos/train/529,ACOS copies of one text disagree on labels (all copies dropped),acos/train/24,1.0,long battery life.
+C3,train,acos,acos/train/1458,ACOS copies of one text disagree on labels (all copies dropped),acos/train/2637,1.0,the build quality is fantastic.
+C3,train,acos,acos/train/2637,ACOS copies of one text disagree on labels (all copies dropped),acos/train/1458,1.0,the build quality is fantastic.
+C3,test,acos,acos/test/416,same text as a SemEval sentence with different labels (SemEval kept),semeval16/test/B0146DD02G_18_ANONYMOUS:2,1.0,great battery life.
+C4,train,semeval16,semeval16/train/44:0,exact copy of a test sentence,semeval16/test/B0146DD02G_18_ANONYMOUS:2,1.0,great battery life.
+C4,train,semeval16,semeval16/train/247:4,exact copy of a test sentence,acos/test/139,1.0,Love it.
+C4,train,semeval16,semeval16/train/373:2,exact copy of a test sentence,acos/test/314,1.0,Great product.
+C4,train,semeval16,semeval16/train/350:3,exact copy of a test sentence,acos/test/256,1.0,I LOVE it!
+C4,train,semeval16,semeval16/train/282:0,exact copy of a test sentence,semeval16/test/B00O0W450A_9_ANONYMOUS:1,1.0,"So far, so good!"
+C4,train,semeval16,semeval16/train/32:10,exact copy of a test sentence,semeval16/test/B00LNFCADQ_5_ALWWKZCL1CKGD:0,1.0,Don't waste your money!
+C4,train,semeval16,semeval16/train/291:1,near-duplicate of a test sentence (Jaccard >= 0.8),acos/test/131,0.882,I love the keyboard.
+C4,train,semeval16,semeval16/train/374:8,exact copy of a test sentence,acos/test/787,1.0,The graphics are great.
+C4,train,semeval16,semeval16/train/196:4,near-duplicate of a test sentence (Jaccard >= 0.8),semeval16/test/B0146DD02G_19_ANONYMOUS:0,0.889,I love this computer.
+C4,train,semeval16,semeval16/train/B00FU83YWS_203_A9GCSPVVE7ML0:0,exact copy of a test sentence,acos/test/187,1.0,Great laptop.
+C4,train,semeval16,semeval16/train/B00KMRGF28_338_AB8T657A2V2QS:0,exact copy of a test sentence,acos/test/343,1.0,great price.
+C4,train,semeval16,semeval16/train/B00KMRGF28_284_A3FA96H7RRL740:2,exact copy of a test sentence,semeval16/test/B00M166GWM_3_ANONYMOUS:5,1.0,Would not recommend.
+C4,train,semeval16,semeval16/train/B00KMRGF28_168_A3TKNSIFQ0WOEE:5,exact copy of a test sentence,semeval16/test/B00O0W450A_10_ANONYMOUS:0,1.0,I love this laptop!
+C4,train,acos,acos/train/48,exact copy of a test sentence,semeval16/test/B0074703CM_21_ANONYMOUS:2,1.0,good battery life
+C4,train,acos,acos/train/321,exact copy of a test sentence,acos/test/727,1.0,i love this chromebook!
+C4,train,acos,acos/train/490,exact copy of a test sentence,semeval16/test/B0146DD02G_24_ANONYMOUS:0,1.0,this is a great laptop.
+C4,train,acos,acos/train/522,exact copy of a test sentence,acos/test/205,1.0,easy to use.
+C4,train,acos,acos/train/596,exact copy of a test sentence,semeval16/test/B0146DD02G_19_ANONYMOUS:0,1.0,love this computer!
+C4,train,acos,acos/train/671,near-duplicate of a test sentence (Jaccard >= 0.8),semeval16/test/B00O0W450A_10_ANONYMOUS:0,0.875,love this laptop
+C4,train,acos,acos/train/677,exact copy of a test sentence,semeval16/test/B0074703CM_21_ANONYMOUS:0,1.0,great computer.
+C4,train,acos,acos/train/761,exact copy of a test sentence,acos/test/802,1.0,very good purchase.
+C4,train,acos,acos/train/777,exact copy of a test sentence,acos/test/650,1.0,don't buy it.
+C4,train,acos,acos/train/1223,near-duplicate of a test sentence (Jaccard >= 0.8),acos/test/187,0.833,a great laptop!
+C4,train,acos,acos/train/1268,exact copy of a test sentence,acos/test/520,1.0,this computer is amazing.
+C4,train,acos,acos/train/1943,exact copy of a test sentence,acos/test/548,1.0,no backlit keyboard
+C4,train,acos,acos/train/1973,exact copy of a test sentence,acos/test/321,1.0,awesome computer.
+C4,train,acos,acos/train/2451,near-duplicate of a test sentence (Jaccard >= 0.8),acos/test/677,0.864,battery life is great.
