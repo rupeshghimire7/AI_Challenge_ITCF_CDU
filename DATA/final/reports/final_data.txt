@@ -1,0 +1,13 @@
+FINAL MODEL DATA (models/data.py)
+
+columns kept: sentence_id, source, fold, text, prev_text, next_text, entity, attribute, polarity
+columns dropped: split, review_id, sentence_index, review_n_sentences, aspect_category, has_opinion, n_opinions, out_of_scope, polarity_conflict, elongated, nuances, aspect_terms, opinion_terms, text_raw
+
+train_final.csv
+  semeval16  sentences  2468  opinions  2879  without opinion  459 (18.6%)  categories 81
+  acos       sentences  2884  opinions  3594  without opinion    4 (0.1%)  categories 111
+
+test_final.csv
+  semeval16  sentences   808  opinions   801  without opinion  235 (29.1%)  categories 67
+  acos       sentences   810  opinions   987  without opinion    1 (0.1%)  categories 80
+
