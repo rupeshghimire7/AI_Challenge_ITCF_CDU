@@ -2,8 +2,8 @@
 
 1. Unit cases: normalisation, sentence splitting, match_key, artefact and nuance detection. The script stops on the
    first failing case.
-2. Corpus (needs DATA/final/*_merged_cleaned.csv from clean_data.py):
-   - normalise() is idempotent on every cleaned sentence and leaves no artefact on the raw source text;
+2. Corpus (needs DATA/final/*_merged.csv from prepare_data.py):
+   - normalise() is idempotent on every prepared sentence and leaves no artefact on the raw source text;
    - the splitter against SemEval's gold segmentation (each review's gold sentences joined with a space, split again);
    - preprocess() throughput on whole SemEval reviews.
 
@@ -98,13 +98,12 @@ def unit_cases() -> int:
 
 
 def corpus_checks(sents: pd.DataFrame) -> list[str]:
-    out = [f"cleaned sentences: {len(sents)}"]
+    out = [f"prepared sentences: {len(sents)}"]
     out.append(f"normalise idempotent: {int((sents.text.map(normalise) == sents.text).sum())}/{len(sents)}")
     left = sents.text_raw.map(lambda t: artefacts(normalise(t)))
     out.append(f"raw source text with an artefact left after normalise: {int((left.map(len) > 0).sum())}/{len(sents)}")
 
-    sem = sents[sents.source == "semeval16"]
-    gold = sem.groupby(["split", "review_id"], sort=False).text.agg(list)  # cleaning may have removed a few sentences
+    gold = sents.groupby(["split", "review_id"], sort=False).text.agg(list)  # preparation may have removed a few sentences
     tp = n_pred = n_gold = exact = 0
     for sentences in gold:
         pred = split_sentences(" ".join(sentences))
@@ -116,7 +115,7 @@ def corpus_checks(sents: pd.DataFrame) -> list[str]:
     out += ["", f"splitter vs SemEval gold boundaries ({len(gold)} reviews)",
             f"precision {p:.3f}  recall {r:.3f}  F1 {2 * p * r / max(p + r, 1e-9):.3f}  reviews split exactly: {exact}/{len(gold)}"]
 
-    reviews = sem.groupby(["split", "review_id"], sort=False).text_raw.agg(" ".join).tolist()
+    reviews = sents.groupby(["split", "review_id"], sort=False).text_raw.agg(" ".join).tolist()
     t0 = time.perf_counter()
     n = sum(len(preprocess(r)) for r in reviews)
     dt = time.perf_counter() - t0
@@ -130,11 +129,11 @@ def main() -> None:
     rep.append(f"unit cases passed: {unit_cases()}")
     rep.append(f"artefacts checked: {', '.join(ARTEFACTS)}")
     rep += [f"nuances checked: {', '.join(NUANCES)}", ""]
-    paths = [FINAL_DIR / f"{s}_merged_cleaned.csv" for s in ("train", "test")]
+    paths = [FINAL_DIR / f"{s}_merged.csv" for s in ("train", "test")]
     if all(p.exists() for p in paths):
         rep += corpus_checks(pd.concat([to_sentences(load_long(p)) for p in paths], ignore_index=True))
     else:
-        rep.append("corpus checks skipped: run prepare_data.py and clean_data.py first")
+        rep.append("corpus checks skipped: run prepare_data.py first")
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     (REPORT_DIR / "preprocess.txt").write_text("\n".join(rep) + "\n", encoding="utf-8")
     print("\n".join(rep))

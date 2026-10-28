@@ -1,22 +1,20 @@
-"""Exploratory data analysis of the prepared corpora (plan D4, D5.1).
+"""Exploratory data analysis of the prepared data (plan D4, D5.1).
 
-Sets, named as in plan D1: S1 = SemEval-2016 laptops train, T1 = SemEval test, S4 = Laptop-ACOS train, T2 = ACOS test.
-Numbers come from the cleaned files (*_merged_cleaned.csv) unless a section says otherwise. An opinion is a
-(sentence, category, polarity) tuple; a category count is the number of sentences containing the category.
+Sets, named as in plan D1: S1 = SemEval-2016 laptops train, T1 = SemEval test, from DATA/final/*_merged.csv. An opinion
+is a (sentence, category, polarity) tuple; a category count is the number of sentences containing the category.
 
 Sections: 1 overview, 2 label space, 3 polarity, 4 opinions per sentence, 5 text and token length (sets max_len),
-6 review structure and context, 7 category co-occurrence, 8 out-of-scope sentences, 9 SemEval vs ACOS annotation,
-10 train -> test shift, 11 nuances (D5.1 slices, src.nuance_checker).
+6 review structure and context, 7 category co-occurrence, 8 out-of-scope sentences, 9 train -> test shift,
+10 nuances (D5.1 slices, src.nuance_checker).
 
 Outputs: DATA/final/reports/eda.txt (the printed report), reports/figures/*.png, reports/tables/*.csv
-Run:     python scripts/eda.py     (after clean_data.py). Section 5 downloads two tokenizer.json files from the Hugging
-         Face Hub on first run; if that fails, the section is skipped.
+Run:     python scripts/eda.py     (after prepare_data.py). Section 5 downloads two tokenizer.json files from the
+         Hugging Face Hub on first run; if that fails, the section is skipped.
 """
 
 from __future__ import annotations
 
 import itertools
-import json
 import math
 import re
 import sys
@@ -34,27 +32,25 @@ from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 from scipy.spatial.distance import jensenshannon  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from src.config import ATTRIBUTES, ENTITIES, FINAL_DIR, OUT_OF_SCOPE, POLARITIES, REPORT_DIR, ROOT  # noqa: E402
+from src.config import ATTRIBUTES, ENTITIES, FINAL_DIR, POLARITIES, REPORT_DIR, ROOT  # noqa: E402
 from src.data_maker import load_long, to_sentences  # noqa: E402
 from src.nuance_checker import NUANCES  # noqa: E402
-from src.preprocess import match_key  # noqa: E402
 
 FINAL = FINAL_DIR
 FIG, TAB = REPORT_DIR / "figures", REPORT_DIR / "tables"
-SETS = {"S1": ("train", "semeval16"), "T1": ("test", "semeval16"), "S4": ("train", "acos"), "T2": ("test", "acos")}
-NAMES = {"S1": "SemEval train (S1)", "T1": "SemEval test (T1)", "S4": "ACOS train (S4)", "T2": "ACOS test (T2)"}
+SETS = {"S1": "train", "T1": "test"}
+NAMES = {"S1": "SemEval train (S1)", "T1": "SemEval test (T1)"}
 TOKENIZERS = {"bge-small-en-v1.5 (model B)": "BAAI/bge-small-en-v1.5", "LFM2.5-Encoder-230M (model A)": "LiquidAI/LFM2.5-Encoder-230M"}
 
 # Chart palette: the dataviz reference palette (validated: adjacent CVD dE >= 9.1 in this slot order). A set keeps its
 # colour in every figure. Polarity is diverging: red (negative) / grey midpoint (neutral) / blue (positive).
 SURFACE, INK, INK2, RULE, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#c9c8c2", "#e9e8e4"
-SET_COLOR = {"S1": "#2a78d6", "T1": "#eb6834", "S4": "#1baf7a", "T2": "#eda100"}
+SET_COLOR = {"S1": "#2a78d6", "T1": "#eb6834"}
 POL_COLOR = {"negative": "#e34948", "neutral": "#9c9b96", "positive": "#2a78d6"}
 RAMP = LinearSegmentedColormap.from_list("blue", ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"])
 plt.rcParams.update({"font.size": 9, "axes.titlesize": 11, "axes.titleweight": "bold", "axes.titlelocation": "left",
                      "axes.titlecolor": INK, "axes.labelcolor": INK2, "xtick.color": INK2, "ytick.color": INK2,
                      "figure.facecolor": SURFACE, "axes.facecolor": SURFACE, "savefig.facecolor": SURFACE, "legend.frameon": False})
-
 
 
 # ----------------------------------------------------------------------------------------------- helpers
@@ -120,28 +116,24 @@ def stacked_share(ax, labels: list[str], shares: dict[str, list[float]], colors:
 
 
 # ----------------------------------------------------------------------------------------------- sections
-def overview(long, sents, merged_sents) -> list[str]:
-    rows, impact = [], []
+def overview(long, sents) -> list[str]:
+    rows = []
     for k in SETS:
         d, s = long[k], sents[k]
         n, has = len(s), s.n_opinions > 0
         op = opinions(d)
-        rows.append([NAMES[k], s.review_id[s.review_id != ""].nunique() or "–", n, int(has.sum()), pct((~has).sum(), n),
+        rows.append([NAMES[k], s.review_id.nunique(), n, int(has.sum()), pct((~has).sum(), n),
                      pct(s.out_of_scope.sum(), n), len(op), len(cat_rows(d)), f"{len(op) / max(has.sum(), 1):.2f}",
                      pct((s.n_opinions >= 2).sum(), n), op.aspect_category.nunique(), op.entity.nunique(), op.attribute.nunique()])
-        m = merged_sents[k]
-        impact.append([NAMES[k], len(m), n, len(m) - n, int(m.opinions.map(len).sum()), len(op)])
     out = ["1. OVERVIEW"]
     out += table(["set", "reviews", "sentences", "with opinion", "without opinion", "out of scope", "opinions", "unique sentence x category",
                "opinions per opinionated sentence", "multi-opinion sentences", "categories", "entities", "attributes"], rows)
-    out += ["cleaning impact (*_merged.csv -> *_merged_cleaned.csv)"]
-    out += table(["set", "sentences merged", "sentences cleaned", "removed", "opinions merged", "opinions cleaned"], impact)
     return out
 
 
 def label_space(long) -> tuple[list[str], dict[str, Counter]]:
     counts = {k: Counter(cat_rows(long[k]).aspect_category) for k in SETS}
-    cats = sorted(set().union(*counts.values()), key=lambda c: (-counts["S1"][c], -counts["S4"][c], c))
+    cats = sorted(set().union(*counts.values()), key=lambda c: (-counts["S1"][c], -counts["T1"][c], c))
     pd.DataFrame({"category": cats, **{k: [counts[k][c] for c in cats] for k in SETS}}).to_csv(TAB / "category_counts.csv", index=False)
     s1 = counts["S1"]
     total = sum(s1.values())
@@ -154,19 +146,17 @@ def label_space(long) -> tuple[list[str], dict[str, Counter]]:
                      pct(sum(v for _, v in c.most_common(5)), sum(c.values())), pct(sum(v for _, v in c.most_common(10)), sum(c.values())),
                      c.most_common(1)[0][0] + f" ({pct(c.most_common(1)[0][1], sum(c.values()))})"])
     out += table(["set", "categories", "with < 5 sentences", "with < 10 sentences", "top-5 share", "top-10 share", "most frequent"], rows)
-    merged_train = counts["S1"] + counts["S4"]
-    out += [f"S1 + S4 categories: {len(merged_train)} ({len(set(counts['S4']) - set(s1))} only in S4)",
-            f"S1 LAPTOP#GENERAL share: {pct(s1['LAPTOP#GENERAL'], total)}; S1 top-10 share: {pct(sum(s1[c] for c in top[:10]), total)}; "
+    out += [f"S1 LAPTOP#GENERAL share: {pct(s1['LAPTOP#GENERAL'], total)}; S1 top-10 share: {pct(sum(s1[c] for c in top[:10]), total)}; "
             f"S1 categories with < 5 sentences: {sum(v < 5 for v in s1.values())} of {len(s1)}", "",
             "top 20 categories (all: reports/tables/category_counts.csv)"]
     out += table(["category", *SETS], [[c, *(counts[k][c] for k in SETS)] for c in cats[:20]])
 
     fig, ax = plt.subplots(figsize=(7.5, 3.4))
-    for k in ("S1", "S4"):
+    for k in SETS:
         v = sorted(counts[k].values(), reverse=True)
         ax.plot(range(1, len(v) + 1), v, color=SET_COLOR[k], linewidth=2, label=f"{NAMES[k]}: {len(v)} categories")
     ax.axhline(5, color=INK2, linewidth=0.8)
-    ax.text(len(merged_train) * 0.97, 5.6, "5 sentences", ha="right", va="bottom", color=INK2, fontsize=7.5)
+    ax.text(len(s1) * 0.97, 5.6, "5 sentences", ha="right", va="bottom", color=INK2, fontsize=7.5)
     ax.set_yscale("log")
     ax.set_xlabel("category rank")
     ax.set_ylabel("sentences (log scale)")
@@ -178,13 +168,13 @@ def label_space(long) -> tuple[list[str], dict[str, Counter]]:
     fig, ax = plt.subplots(figsize=(7.5, 7))
     show = top[:25]
     y = np.arange(len(show))[::-1]
-    for i, k in enumerate(("S1", "S4")):
+    for i, k in enumerate(SETS):
         share = [100 * counts[k][c] / sum(counts[k].values()) for c in show]
         ax.barh(y + (0.2 if i == 0 else -0.2), share, height=0.38, color=SET_COLOR[k], label=NAMES[k], edgecolor=SURFACE, linewidth=1)
     ax.set_yticks(y, show, fontsize=7.5)
     ax.xaxis.set_major_formatter(lambda v, _: f"{v:.0f}%")
     ax.set_xlabel("share of the set's sentence x category pairs")
-    ax.set_title("Top 25 S1 categories: how often each corpus uses them")
+    ax.set_title("Top 25 S1 categories: share in train and test")
     ax.legend(loc="lower right", fontsize=8)
     style(ax)
     out += [save(fig, "top_categories.png"), ""]
@@ -198,8 +188,8 @@ def label_space(long) -> tuple[list[str], dict[str, Counter]]:
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 6.6), sharey=True)
     ents = [r[0] for r in ent_rows]
-    vmax = max(100 * v / sum(counts[k].values()) for k in ("S1", "S4") for v in counts[k].values())
-    for ax, k in zip(axes, ("S1", "S4")):
+    vmax = max(100 * v / sum(counts[k].values()) for k in SETS for v in counts[k].values())
+    for ax, k in zip(axes, SETS):
         tot = sum(counts[k].values())
         grid = np.array([[counts[k][f"{e}#{a}"] for a in ATTRIBUTES] for e in ents], dtype=float)
         share = np.ma.masked_equal(100 * grid / tot, 0)
@@ -276,12 +266,12 @@ def per_sentence(sents) -> list[str]:
     fig, ax = plt.subplots(figsize=(7.5, 3))
     x = np.arange(len(bins))
     for i, k in enumerate(SETS):
-        ax.bar(x + (i - 1.5) * 0.2, [100 * dist[k][j] / len(sents[k]) for j in range(6)], width=0.19, color=SET_COLOR[k], label=NAMES[k],
+        ax.bar(x + (i - 0.5) * 0.36, [100 * dist[k][j] / len(sents[k]) for j in range(6)], width=0.34, color=SET_COLOR[k], label=NAMES[k],
                edgecolor=SURFACE, linewidth=1)
     ax.set_xticks(x, bins)
     ax.set_xlabel("opinions in the sentence")
     ax.yaxis.set_major_formatter(lambda v, _: f"{v:.0f}%")
-    ax.set_title("Opinions per sentence: ACOS has almost no opinion-less sentences")
+    ax.set_title("Opinions per sentence")
     ax.legend(fontsize=8)
     style(ax, "y")
     out += [save(fig, "opinions_per_sentence.png"), ""]
@@ -319,15 +309,13 @@ def lengths(sents) -> list[str]:
             L = n(sents[k].text)
             hist[name, k] = L
             rows.append([name, NAMES[k], *quantiles(L), pct((L > 64).sum(), len(L), 2), pct((L > 128).sum(), len(L), 2)])
-        train = np.concatenate([hist[name, "S1"], hist[name, "S4"]])
-        rows.append([name, "S1 + S4", *quantiles(train), pct((train > 64).sum(), len(train), 2), pct((train > 128).sum(), len(train), 2)])
         for k in ("S1", "T1"):  # plan L4 input: [prev] [SEP] target [SEP] [next]
             s = sents[k]
             L = n(s.prev_text, False) + n(s.text, False) + n(s.next_text, False) + n_special + 2
             ctx_rows.append([name, NAMES[k], *quantiles(L), pct((L > 128).sum(), len(L), 2), pct((L > 256).sum(), len(L), 2)])
     out += ["tokens per sentence, special tokens included"]
     out += table(["tokenizer", "set", "p50", "p95", "p99", "max", "> 64", "> 128"], rows)
-    out += ["tokens with review context: [prev] [SEP] target [SEP] [next] (plan L4; SemEval only)"]
+    out += ["tokens with review context: [prev] [SEP] target [SEP] [next] (plan L4)"]
     out += table(["tokenizer", "set", "p50", "p95", "p99", "max", "> 128", "> 256"], ctx_rows)
     rec = {name: int(math.ceil(np.percentile(hist[name, "S1"], 99) / 8) * 8) for name in toks}
     out += ["max_len (S1 p99 rounded up to a multiple of 8): " + "; ".join(f"{k}: {v}" for k, v in rec.items()), ""]
@@ -335,7 +323,7 @@ def lengths(sents) -> list[str]:
     fig, axes = plt.subplots(1, 2, figsize=(10, 3.2), sharey=True)
     for ax, name in zip(axes, toks):
         bins = np.arange(0, 100, 2)
-        for k in ("S1", "S4"):
+        for k in SETS:
             ax.hist(np.minimum(hist[name, k], 98), bins=bins, histtype="step", linewidth=2, color=SET_COLOR[k], label=NAMES[k],
                     weights=np.full(len(hist[name, k]), 100 / len(hist[name, k])))
         p99 = np.percentile(hist[name, "S1"], 99)
@@ -435,108 +423,40 @@ def out_of_scope(sents) -> list[str]:
     return out
 
 
-def annotation_differences(long, counts) -> list[str]:
-    from prepare_data import hyphen_evidence, read_acos, read_sb1  # raw, pre-deduplication units
-
-    sb1 = read_sb1("train") + read_sb1("test")
-    compounds, pairs = hyphen_evidence(sb1)
-    acos = read_acos("train", compounds, pairs) + read_acos("test", compounds, pairs)
-    labels = lambda u: frozenset((c, p) for c, p, _, _ in u["opinions"] if not c.startswith(OUT_OF_SCOPE))  # noqa: E731
-    by_key: dict[str, tuple[list, list]] = {}
-    for corpus, units in ((0, sb1), (1, acos)):
-        for u in units:
-            by_key.setdefault(match_key(u["text"]), ([], []))[corpus].append(u)
-    shared, examples = Counter(), []
-    for sem, aco in by_key.values():  # one verdict per distinct text found in both corpora
-        if not (sem and aco):
-            continue
-        a, b = {labels(u) for u in aco}, {labels(v) for v in sem}
-        cats = lambda ls: {frozenset(c for c, _ in x) for x in ls}  # noqa: E731
-        kind = "identical labels" if a == b else "same categories, different polarity" if cats(a) == cats(b) else "different categories"
-        shared[kind] += 1
-        if kind != "identical labels":
-            examples.append([sem[0]["text"], "; ".join(", ".join(sorted(f"{c} {p}" for c, p in x)) or "(none)" for x in b),
-                             "; ".join(", ".join(sorted(f"{c} {p}" for c, p in x)) or "(none)" for x in a)])
-    out = ["9. SEMEVAL VS ACOS ANNOTATION (plan D7.4)",
-           f"same sentence in both corpora (raw data, all splits): {sum(shared.values())} distinct texts; "
-           + ", ".join(f"{k}: {v}" for k, v in shared.most_common()), ""]
-    if examples:
-        out += table(["sentence (SemEval text)", "SemEval labels", "ACOS labels"], examples)
-    rows = []
-    for e in ("LAPTOP", "BATTERY", "DISPLAY", "KEYBOARD", "CPU", "SUPPORT", "OS", "SOFTWARE", "MULTIMEDIA_DEVICES"):
-        dist = {k: np.array([counts[k][f"{e}#{a}"] for a in ATTRIBUTES], dtype=float) for k in ("S1", "S4")}
-        if min(d.sum() for d in dist.values()) < 20:
-            continue
-        top = {k: ATTRIBUTES[int(np.argmax(d))] for k, d in dist.items()}
-        js = jensenshannon(dist["S1"], dist["S4"], base=2) ** 2
-        rows.append([e, int(dist["S1"].sum()), int(dist["S4"].sum()), f"{js:.3f}",
-                     *(f"{top[k]} ({pct(d.max(), d.sum())})" for k, d in dist.items())])
-    out += ["attribute distribution per entity, S1 vs S4 (Jensen-Shannon divergence: 0 = same, 1 = disjoint)"]
-    out += table(["entity", "S1 n", "S4 n", "JS divergence", "S1 most used attribute", "S4 most used attribute"], rows)
-    bat = {k: ", ".join(f"{a} {counts[k][f'BATTERY#{a}']}" for a in sorted(ATTRIBUTES, key=lambda a: -counts[k][f"BATTERY#{a}"])
-                        if counts[k][f"BATTERY#{a}"]) for k in ("S1", "S4")}
-    pad = re.compile(r"\b(?:touch ?pad|track ?pad|mouse ?pad)", re.I)
-    pad_ent = {k: Counter(cat_rows(long[k])[lambda d: d.text.map(lambda t: bool(pad.search(t)))].entity) for k in ("S1", "S4")}
-    pad_txt = "; ".join(f"{NAMES[k]}: " + ", ".join(f"{e} {v}" for e, v in c.most_common(4)) for k, c in pad_ent.items())
-    acos_ops = opinions(pd.concat([long["S4"], long["T2"]]))
-    asp = [t for terms in acos_ops.aspect_terms for t in terms.split(" | ")]
-    opn = [t for terms in acos_ops.opinion_terms for t in terms.split(" | ")]
-    out += [f"BATTERY attributes: S1 {bat['S1']}; S4 {bat['S4']}",
-            f"entities of opinions in sentences mentioning a touchpad / trackpad: {pad_txt}",
-            f"opinion-less sentences: S4 {pct((long['S4'].drop_duplicates('sentence_id').n_opinions == 0).sum(), long['S4'].sentence_id.nunique())}, "
-            f"S1 {pct((long['S1'].drop_duplicates('sentence_id').n_opinions == 0).sum(), long['S1'].sentence_id.nunique())}",
-            f"ACOS implicit (NULL) terms: aspect {pct(asp.count('NULL'), len(asp))}, opinion {pct(opn.count('NULL'), len(opn))}",
-            "sentences with an uppercase letter: " + ", ".join(
-                f"{k} {pct(t.str.contains('[A-Z]').sum(), len(t))}" for k in SETS for t in [long[k].drop_duplicates("sentence_id").text]), ""]
-    return out
-
-
 def shift(long, sents, counts) -> list[str]:
-    def dist(cnt, cats):
-        v = np.array([cnt[c] for c in cats], dtype=float)
-        return v / v.sum()
-
-    space = json.loads((FINAL / "label_space.json").read_text())
-    s14 = counts["S1"] + counts["S4"]
+    cats = sorted(set(counts["S1"]) | set(counts["T1"]))
+    dist = {k: np.array([counts[k][c] for c in cats], dtype=float) / sum(counts[k].values()) for k in SETS}
+    js = jensenshannon(dist["S1"], dist["T1"], base=2) ** 2
+    unseen = sorted(c for c in counts["T1"] if not counts["S1"][c])
     vocab = {k: Counter(w for t in sents[k].text for w in re.findall(r"[a-z0-9']+", t.lower())) for k in SETS}
-    vocab["S1+S4"] = vocab["S1"] + vocab["S4"]
-    rows = []
-    for tr, te in (("S1", "T1"), ("S1", "T2"), ("S4", "T2"), ("S1+S4", "T1"), ("S1+S4", "T2")):
-        cnt = s14 if tr == "S1+S4" else counts[tr]
-        cats = sorted(set(cnt) | set(counts[te]))
-        js = jensenshannon(dist(cnt, cats), dist(counts[te], cats), base=2) ** 2
-        unseen = [c for c in counts[te] if not cnt[c]]
-        oov_tok = sum(v for w, v in vocab[te].items() if w not in vocab[tr])
-        rows.append([tr, NAMES[te], f"{js:.3f}", f"{len(unseen)} cats / {sum(counts[te][c] for c in unseen)} sentences",
-                     pct(oov_tok, sum(vocab[te].values())), pct(sum(w not in vocab[tr] for w in vocab[te]), len(vocab[te]))])
-    out = ["10. TRAIN -> TEST SHIFT"]
-    out += table(["train", "test", "category JS divergence", "test categories unseen in train", "OOV tokens", "OOV word types"], rows)
+    oov_tok = sum(v for w, v in vocab["T1"].items() if w not in vocab["S1"])
+    out = ["9. TRAIN -> TEST SHIFT (S1 -> T1)"]
+    out += table(["category JS divergence", "test categories unseen in train", "OOV tokens", "OOV word types"],
+                 [[f"{js:.3f}", f"{len(unseen)} cats / {sum(counts['T1'][c] for c in unseen)} sentences",
+                   pct(oov_tok, sum(vocab["T1"].values())), pct(sum(w not in vocab["S1"] for w in vocab["T1"]), len(vocab["T1"]))]])
     empty = {k: (sents[k].n_opinions == 0).mean() for k in SETS}
-    out += [f"opinion-less sentences: S1 {pct(empty['S1'], 1)} -> T1 {pct(empty['T1'], 1)}; S4 {pct(empty['S4'], 1)} -> T2 {pct(empty['T2'], 1)}",
-            f"T1 categories unseen in S1: {space['unseen_in_semeval16_train']['semeval16_test']}",
-            f"T1 categories unseen in S1 + S4: {space['unseen_in_merged_train']['semeval16_test']}", ""]
+    out += [f"opinion-less sentences: S1 {pct(empty['S1'], 1)} -> T1 {pct(empty['T1'], 1)}", f"T1 categories unseen in S1: {unseen}", ""]
 
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5.6), sharey=True)
+    fig, ax = plt.subplots(figsize=(7.5, 5.6))
     ents = sorted(ENTITIES, key=lambda e: -sum(v for c, v in counts["S1"].items() if c.startswith(e + "#")))
     y = np.arange(len(ents))[::-1]
-    for ax, (a, b) in zip(axes, (("S1", "T1"), ("S4", "T2"))):
-        for i, k in enumerate((a, b)):
-            tot = sum(counts[k].values())
-            share = [100 * sum(v for c, v in counts[k].items() if c.startswith(e + "#")) / tot for e in ents]
-            ax.barh(y + (0.2 if i == 0 else -0.2), share, height=0.38, color=SET_COLOR[k], label=NAMES[k], edgecolor=SURFACE, linewidth=1)
-        ax.set_yticks(y, ents, fontsize=7.5)
-        ax.xaxis.set_major_formatter(lambda v, _: f"{v:.0f}%")
-        ax.legend(fontsize=8, loc="lower right")
-        ax.set_title(f"{'SemEval' if a == 'S1' else 'ACOS'}: entity share, train vs test", fontsize=10)
-        style(ax)
+    for i, k in enumerate(SETS):
+        tot = sum(counts[k].values())
+        share = [100 * sum(v for c, v in counts[k].items() if c.startswith(e + "#")) / tot for e in ents]
+        ax.barh(y + (0.2 if i == 0 else -0.2), share, height=0.38, color=SET_COLOR[k], label=NAMES[k], edgecolor=SURFACE, linewidth=1)
+    ax.set_yticks(y, ents, fontsize=7.5)
+    ax.xaxis.set_major_formatter(lambda v, _: f"{v:.0f}%")
+    ax.legend(fontsize=8, loc="lower right")
+    ax.set_title("Entity share, train vs test")
+    style(ax)
     out += [save(fig, "entity_shift.png"), ""]
     return out
 
 
 def nuance_slices(long, sents) -> list[str]:
-    """D5.1 text slices from the `nuances` column that clean_data.py writes with src.nuance_checker."""
+    """D5.1 text slices from the `nuances` column that prepare_data.py writes with src.nuance_checker."""
     tags = {k: sents[k].nuances.map(lambda v: set(v.split("|")) - {""}) for k in SETS}
-    out = ["11. NUANCES (D5.1 text slices, src.nuance_checker; unvalidated until D5.3)", "share of sentences"]
+    out = ["10. NUANCES (D5.1 text slices, src.nuance_checker; unvalidated until D5.3)", "share of sentences"]
     out += table(["set", *NUANCES, "any", "elongated"],
                  [[k, *(pct(tags[k].map(lambda t, n=n: n in t).sum(), len(tags[k])) for n in NUANCES),
                    pct((tags[k].map(len) > 0).sum(), len(tags[k])), pct(sents[k].elongated.sum(), len(tags[k]))] for k in SETS])
@@ -557,24 +477,20 @@ def main() -> None:
     t0 = time.time()
     for d in (FIG, TAB):
         d.mkdir(parents=True, exist_ok=True)
-    cleaned = {s: load_long(FINAL / f"{s}_merged_cleaned.csv") for s in ("train", "test")}
-    merged = {s: load_long(FINAL / f"{s}_merged.csv") for s in ("train", "test")}
-    long = {k: cleaned[sp][cleaned[sp].source == src].reset_index(drop=True) for k, (sp, src) in SETS.items()}
+    long = {k: load_long(FINAL / f"{split}_merged.csv") for k, split in SETS.items()}
     sents = {k: to_sentences(v) for k, v in long.items()}
-    merged_sents = {k: to_sentences(merged[sp][merged[sp].source == src]) for k, (sp, src) in SETS.items()}
 
     space_txt, counts = label_space(long)
     s1_ops = opinions(long["S1"])
     report = [
-        "EDA: SemEval-2016 laptops + Laptop-ACOS (scripts/eda.py, from DATA/final/*_merged_cleaned.csv)",
+        "EDA: SemEval-2016 laptops (scripts/eda.py, from DATA/final/*_merged.csv)",
         "sets: " + ", ".join(NAMES.values()), "",
-        f"train sentences: {sum(len(sents[k]) for k in ('S1', 'S4'))} ({len(sents['S1'])} S1 + {len(sents['S4'])} S4)",
-        f"test sentences: {sum(len(sents[k]) for k in ('T1', 'T2'))} ({len(sents['T1'])} T1 + {len(sents['T2'])} T2)",
-        f"categories used: S1 {len(counts['S1'])}, S1 + S4 {len(counts['S1'] + counts['S4'])}, possible {len(ENTITIES) * len(ATTRIBUTES)}",
+        f"sentences: S1 {len(sents['S1'])}, T1 {len(sents['T1'])}",
+        f"categories used: S1 {len(counts['S1'])}, T1 {len(counts['T1'])}, possible {len(ENTITIES) * len(ATTRIBUTES)}",
         "S1 polarity: " + ", ".join(f"{p} {pct(v, len(s1_ops))}" for p, v in sorted(Counter(s1_ops.polarity).items(), key=lambda x: -x[1])),
         "opinion-less sentences: " + ", ".join(f"{k} {pct((sents[k].n_opinions == 0).mean(), 1)}" for k in SETS), "",
     ]
-    report += overview(long, sents, merged_sents)
+    report += overview(long, sents)
     report += space_txt
     report += polarity(long, sents)
     report += per_sentence(sents)
@@ -582,7 +498,6 @@ def main() -> None:
     report += structure(sents)
     report += cooccurrence(sents)
     report += out_of_scope(sents)
-    report += annotation_differences(long, counts)
     report += shift(long, sents, counts)
     report += nuance_slices(long, sents)
     (REPORT_DIR / "eda.txt").write_text("\n".join(report), encoding="utf-8")
