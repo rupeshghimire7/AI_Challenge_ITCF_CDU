@@ -1,0 +1,351 @@
+EDA: SemEval-2016 laptops + Laptop-ACOS (scripts/eda.py, from DATA/final/*_merged_cleaned.csv)
+sets: SemEval train (S1), SemEval test (T1), ACOS train (S4), ACOS test (T2)
+
+train sentences: 5352 (2468 S1 + 2884 S4)
+test sentences: 1618 (808 T1 + 810 T2)
+categories used: S1 81, S1 + S4 125, possible 198
+S1 polarity: positive 55.9%, negative 37.5%, neutral 6.5%
+opinion-less sentences: S1 18.6%, T1 29.1%, S4 0.1%, T2 0.1%
+
+1. OVERVIEW
+set                 reviews  sentences  with opinion  without opinion  out of scope  opinions  unique sentence x category  opinions per opinionated sentence  multi-opinion sentences  categories  entities  attributes
+------------------  -------  ---------  ------------  ---------------  ------------  --------  --------------------------  ---------------------------------  -----------------------  ----------  --------  ----------
+SemEval train (S1)      449       2468          2009            18.6%          8.1%      2879                        2876                               1.43                    27.8%          81        22           9
+SemEval test (T1)        80        808           573            29.1%         14.0%       801                         799                               1.40                    22.2%          67        22           9
+ACOS train (S4)           –       2884          2880             0.1%          0.1%      3594                        3563                               1.25                    18.8%         111        22           9
+ACOS test (T2)            –        810           809             0.1%          0.1%       987                         981                               1.22                    16.9%          80        22           9
+
+cleaning impact (*_merged.csv -> *_merged_cleaned.csv)
+set                 sentences merged  sentences cleaned  removed  opinions merged  opinions cleaned
+------------------  ----------------  -----------------  -------  ---------------  ----------------
+SemEval train (S1)              2481               2468       13             2892              2879
+SemEval test (T1)                808                808        0              801               801
+ACOS train (S4)                 2902               2884       18             3618              3594
+ACOS test (T2)                   811                810        1              989               987
+
+2. LABEL SPACE
+inventory: 22 entities x 9 attributes = 198 possible categories
+set                 categories  with < 5 sentences  with < 10 sentences  top-5 share  top-10 share  most frequent
+------------------  ----------  ------------------  -------------------  -----------  ------------  ----------------------
+SemEval train (S1)          81                  31                   44        52.3%         72.8%  LAPTOP#GENERAL (21.2%)
+SemEval test (T1)           67                  35                   51        49.3%         68.1%  LAPTOP#GENERAL (19.8%)
+ACOS train (S4)            111                  43                   59        46.6%         59.6%  LAPTOP#GENERAL (20.7%)
+ACOS test (T2)              80                  42                   56        46.0%         59.1%  LAPTOP#GENERAL (21.8%)
+
+S1 + S4 categories: 125 (44 only in S4)
+S1 LAPTOP#GENERAL share: 21.2%; S1 top-10 share: 72.8%; S1 categories with < 5 sentences: 31 of 81
+
+top 20 categories (all: reports/tables/category_counts.csv)
+category                        S1   T1   S4   T2
+-----------------------------  ---  ---  ---  ---
+LAPTOP#GENERAL                 610  158  739  214
+LAPTOP#OPERATION_PERFORMANCE   278   70  400  100
+LAPTOP#DESIGN_FEATURES         253   73  242   66
+LAPTOP#QUALITY                 222   47  136   29
+LAPTOP#MISCELLANEOUS           142   34   11    0
+LAPTOP#USABILITY               140   46   86   14
+SUPPORT#QUALITY                138   33   18    4
+LAPTOP#PRICE                   135   25  143   38
+COMPANY#GENERAL                 90   38   56   16
+BATTERY#OPERATION_PERFORMANCE   85   19  102   22
+LAPTOP#CONNECTIVITY             55   13   12    7
+DISPLAY#QUALITY                 53   20   55   15
+LAPTOP#PORTABILITY              51    6   41   13
+OS#GENERAL                      35    9   16   11
+SOFTWARE#GENERAL                31    5   40    8
+KEYBOARD#DESIGN_FEATURES        29    7   78   33
+MOUSE#OPERATION_PERFORMANCE     28    3    0    0
+DISPLAY#DESIGN_FEATURES         27   13   67   24
+MULTIMEDIA_DEVICES#QUALITY      26    6   17    3
+DISPLAY#GENERAL                 24    4   87   25
+
+figure: reports/figures/category_long_tail.png
+
+figure: reports/figures/top_categories.png
+
+entities (sentences, share of the set)
+entity              S1            T1           S4            T2
+------------------  ------------  -----------  ------------  -----------
+LAPTOP              1886 (65.6%)  472 (59.1%)  1810 (50.8%)  481 (49.0%)
+SUPPORT             146 (5.1%)    35 (4.4%)    97 (2.7%)     31 (3.2%)
+DISPLAY             124 (4.3%)    50 (6.3%)    319 (9.0%)    86 (8.8%)
+BATTERY             95 (3.3%)     25 (3.1%)    175 (4.9%)    52 (5.3%)
+COMPANY             90 (3.1%)     38 (4.8%)    65 (1.8%)     16 (1.6%)
+KEYBOARD            89 (3.1%)     30 (3.8%)    291 (8.2%)    86 (8.8%)
+MOUSE               86 (3.0%)     26 (3.3%)    3 (0.1%)      1 (0.1%)
+SOFTWARE            86 (3.0%)     17 (2.1%)    150 (4.2%)    32 (3.3%)
+OS                  73 (2.5%)     34 (4.3%)    98 (2.8%)     34 (3.5%)
+MULTIMEDIA_DEVICES  46 (1.6%)     16 (2.0%)    104 (2.9%)    27 (2.8%)
+HARD_DISC           25 (0.9%)     21 (2.6%)    39 (1.1%)     16 (1.6%)
+GRAPHICS            24 (0.8%)     3 (0.4%)     16 (0.4%)     9 (0.9%)
+CPU                 21 (0.7%)     7 (0.9%)     47 (1.3%)     15 (1.5%)
+POWER_SUPPLY        19 (0.7%)     2 (0.3%)     58 (1.6%)     12 (1.2%)
+MEMORY              16 (0.6%)     8 (1.0%)     49 (1.4%)     8 (0.8%)
+SHIPPING            12 (0.4%)     1 (0.1%)     29 (0.8%)     6 (0.6%)
+MOTHERBOARD         7 (0.2%)      2 (0.3%)     3 (0.1%)      1 (0.1%)
+HARDWARE            7 (0.2%)      4 (0.5%)     115 (3.2%)    34 (3.5%)
+FANS_COOLING        6 (0.2%)      2 (0.3%)     19 (0.5%)     4 (0.4%)
+PORTS               6 (0.2%)      2 (0.3%)     65 (1.8%)     24 (2.4%)
+OPTICAL_DRIVES      6 (0.2%)      3 (0.4%)     4 (0.1%)      2 (0.2%)
+WARRANTY            6 (0.2%)      1 (0.1%)     7 (0.2%)      4 (0.4%)
+
+attributes
+attribute              S1           T1           S4            T2
+---------------------  -----------  -----------  ------------  -----------
+GENERAL                837 (29.1%)  229 (28.7%)  1322 (37.1%)  397 (40.5%)
+QUALITY                549 (19.1%)  130 (16.3%)  328 (9.2%)    83 (8.5%)
+OPERATION_PERFORMANCE  469 (16.3%)  123 (15.4%)  1031 (28.9%)  253 (25.8%)
+DESIGN_FEATURES        373 (13.0%)  139 (17.4%)  469 (13.2%)   152 (15.5%)
+USABILITY              231 (8.0%)   93 (11.6%)   173 (4.9%)    36 (3.7%)
+MISCELLANEOUS          164 (5.7%)   38 (4.8%)    12 (0.3%)     1 (0.1%)
+PRICE                  147 (5.1%)   28 (3.5%)    159 (4.5%)    38 (3.9%)
+CONNECTIVITY           55 (1.9%)    13 (1.6%)    24 (0.7%)     8 (0.8%)
+PORTABILITY            51 (1.8%)    6 (0.8%)     45 (1.3%)     13 (1.3%)
+
+figure: reports/figures/entity_attribute_heatmap.png
+
+3. POLARITY
+set                 opinions  negative      neutral     positive
+------------------  --------  ------------  ----------  ------------
+SemEval train (S1)      2879  1081 (37.5%)  188 (6.5%)  1610 (55.9%)
+SemEval test (T1)        801  274 (34.2%)   46 (5.7%)   481 (60.0%)
+ACOS train (S4)         3594  1264 (35.2%)  216 (6.0%)  2114 (58.8%)
+ACOS test (T2)           987  339 (34.3%)   62 (6.3%)   586 (59.4%)
+
+figure: reports/figures/polarity_by_set.png
+
+S1 polarity by entity
+entity                 n  negative  neutral  positive
+------------------  ----  --------  -------  --------
+LAPTOP              1887     30.0%     6.4%     63.6%
+SUPPORT              146     87.7%     2.1%     10.3%
+DISPLAY              125     28.8%     8.0%     63.2%
+BATTERY               95     43.2%     5.3%     51.6%
+COMPANY               90     53.3%     4.4%     42.2%
+KEYBOARD              89     38.2%     5.6%     56.2%
+SOFTWARE              86     37.2%     7.0%     55.8%
+MOUSE                 86     66.3%     9.3%     24.4%
+OS                    73     34.2%    15.1%     50.7%
+MULTIMEDIA_DEVICES    46     60.9%     8.7%     30.4%
+GRAPHICS              25     20.0%    12.0%     68.0%
+HARD_DISC             25     56.0%     0.0%     44.0%
+CPU                   21     38.1%     9.5%     52.4%
+POWER_SUPPLY          19     94.7%     0.0%      5.3%
+MEMORY                16      6.2%    31.2%     62.5%
+SHIPPING              12     58.3%     0.0%     41.7%
+MOTHERBOARD            7    100.0%     0.0%      0.0%
+HARDWARE               7     71.4%     0.0%     28.6%
+FANS_COOLING           6     83.3%     0.0%     16.7%
+OPTICAL_DRIVES         6    100.0%     0.0%      0.0%
+PORTS                  6    100.0%     0.0%      0.0%
+WARRANTY               6     66.7%    16.7%     16.7%
+
+figure: reports/figures/polarity_by_entity.png
+
+S1 polarity by attribute
+attribute                n  negative  neutral  positive
+---------------------  ---  --------  -------  --------
+GENERAL                837     28.1%     3.0%     68.9%
+QUALITY                550     65.1%     3.1%     31.8%
+OPERATION_PERFORMANCE  469     42.6%     3.2%     54.2%
+DESIGN_FEATURES        374     28.1%    12.6%     59.4%
+USABILITY              231     30.3%    10.0%     59.7%
+MISCELLANEOUS          165     27.9%     9.7%     62.4%
+PRICE                  147     20.4%    27.9%     51.7%
+CONNECTIVITY            55     52.7%     5.5%     41.8%
+PORTABILITY             51     15.7%     2.0%     82.4%
+
+mixed polarity inside a sentence
+set                 multi-opinion sentences  with >= 2 polarities  sentences with polarity_conflict (one category, two polarities)
+------------------  -----------------------  --------------------  ---------------------------------------------------------------
+SemEval train (S1)                      687  151 (22.0%)                                                                         3
+SemEval test (T1)                       179  35 (19.6%)                                                                          2
+ACOS train (S4)                         542  151 (27.9%)                                                                        31
+ACOS test (T2)                          137  36 (26.3%)                                                                          6
+
+4. OPINIONS PER SENTENCE
+set                     0      1      2     3     4    5+  mean
+------------------  -----  -----  -----  ----  ----  ----  ----
+SemEval train (S1)  18.6%  53.6%  21.6%  5.1%  0.9%  0.2%  1.17
+SemEval test (T1)   29.1%  48.8%  17.7%  3.2%  1.1%  0.1%  0.99
+ACOS train (S4)      0.1%  81.1%  14.6%  2.9%  0.8%  0.5%  1.25
+ACOS test (T2)       0.1%  83.0%  13.2%  2.5%  1.1%  0.1%  1.22
+
+figure: reports/figures/opinions_per_sentence.png
+
+5. TEXT AND TOKEN LENGTH
+set                 words p50  p95  p99  max  characters p50  p95  p99  max
+------------------  ---------  ---  ---  ---  --------------  ---  ---  ---
+SemEval train (S1)         12   30   40   73              61  155  211  400
+SemEval test (T1)          13   31   42   55              67  167  224  324
+ACOS train (S4)            12   29   42   93              62  158  233  471
+ACOS test (T2)             11   28   35   58              62  155  191  299
+
+tokens per sentence, special tokens included
+tokenizer                      set                 p50  p95  p99  max   > 64  > 128
+-----------------------------  ------------------  ---  ---  ---  ---  -----  -----
+bge-small-en-v1.5 (model B)    SemEval train (S1)   16   38   51   86  0.24%  0.00%
+bge-small-en-v1.5 (model B)    SemEval test (T1)    18   41   54   67  0.37%  0.00%
+bge-small-en-v1.5 (model B)    ACOS train (S4)      16   38   54  118  0.49%  0.00%
+bge-small-en-v1.5 (model B)    ACOS test (T2)       16   36   45   66  0.25%  0.00%
+bge-small-en-v1.5 (model B)    S1 + S4              16   38   53  118  0.37%  0.00%
+LFM2.5-Encoder-230M (model A)  SemEval train (S1)   16   37   49   85  0.28%  0.00%
+LFM2.5-Encoder-230M (model A)  SemEval test (T1)    17   40   53   67  0.12%  0.00%
+LFM2.5-Encoder-230M (model A)  ACOS train (S4)      16   37   53  115  0.38%  0.00%
+LFM2.5-Encoder-230M (model A)  ACOS test (T2)       15   35   43   64  0.00%  0.00%
+LFM2.5-Encoder-230M (model A)  S1 + S4              16   37   51  115  0.34%  0.00%
+
+tokens with review context: [prev] [SEP] target [SEP] [next] (plan L4; SemEval only)
+tokenizer                      set                 p50  p95  p99  max  > 128  > 256
+-----------------------------  ------------------  ---  ---  ---  ---  -----  -----
+bge-small-en-v1.5 (model B)    SemEval train (S1)   45   90  110  165  0.41%  0.00%
+bge-small-en-v1.5 (model B)    SemEval test (T1)    51   99  117  140  0.25%  0.00%
+LFM2.5-Encoder-230M (model A)  SemEval train (S1)   44   89  110  161  0.36%  0.00%
+LFM2.5-Encoder-230M (model A)  SemEval test (T1)    49   96  113  138  0.25%  0.00%
+
+max_len (S1 p99 rounded up to a multiple of 8): bge-small-en-v1.5 (model B): 56; LFM2.5-Encoder-230M (model A): 56
+
+figure: reports/figures/token_lengths.png
+
+6. REVIEW STRUCTURE AND CONTEXT (SemEval)
+set                 reviews  sentences per review: mean  median  max
+------------------  -------  --------------------------  ------  ---
+SemEval train (S1)      449                         5.6       4   26
+SemEval test (T1)        80                        10.1       7   37
+
+S1 first + last sentences: 33.2% of sentences, 60.3% of LAPTOP#GENERAL opinions
+S1 by position in the review
+position       sentences  has an opinion  has LAPTOP#GENERAL  out of scope
+-------------  ---------  --------------  ------------------  ------------
+first                409           81.4%               45.2%          6.4%
+middle              1620           79.8%               14.0%          8.7%
+last                 410           86.3%               44.6%          7.8%
+only sentence         29          100.0%               51.7%          0.0%
+
+figure: reports/figures/position_effect.png
+
+S1 entity carry-over: opinionated sentence shares an entity with the previous opinionated sentence of its review
+entities          same review  random previous sentence
+----------------  -----------  ------------------------
+all                     64.4%                     48.0%
+excluding LAPTOP        12.3%                      1.9%
+
+7. CATEGORY CO-OCCURRENCE (S1)
+opinionated sentences: 2009; with >= 2 categories: 685
+most frequent pairs (all: reports/tables/cooccurrence_pmi_s1.csv)
+category a                    category b                    sentences    PMI
+----------------------------  ----------------------------  ---------  -----
+LAPTOP#GENERAL                LAPTOP#PRICE                         77   0.91
+LAPTOP#GENERAL                LAPTOP#OPERATION_PERFORMANCE         39  -1.11
+LAPTOP#DESIGN_FEATURES        LAPTOP#GENERAL                       36  -1.09
+LAPTOP#OPERATION_PERFORMANCE  LAPTOP#QUALITY                       36   0.23
+COMPANY#GENERAL               LAPTOP#GENERAL                       33   0.27
+LAPTOP#DESIGN_FEATURES        LAPTOP#OPERATION_PERFORMANCE         30  -0.22
+LAPTOP#DESIGN_FEATURES        LAPTOP#USABILITY                     29   0.72
+LAPTOP#DESIGN_FEATURES        LAPTOP#PORTABILITY                   25   1.96
+LAPTOP#GENERAL                LAPTOP#QUALITY                       24  -1.49
+LAPTOP#OPERATION_PERFORMANCE  LAPTOP#USABILITY                     21   0.12
+LAPTOP#DESIGN_FEATURES        LAPTOP#QUALITY                       19  -0.56
+LAPTOP#GENERAL                LAPTOP#USABILITY                     17  -1.32
+
+highest PMI, pairs in >= 5 sentences
+category a                     category b              sentences   PMI
+-----------------------------  ----------------------  ---------  ----
+MOUSE#DESIGN_FEATURES          MOUSE#USABILITY                 8  5.64
+KEYBOARD#DESIGN_FEATURES       KEYBOARD#USABILITY             10  5.11
+MOUSE#OPERATION_PERFORMANCE    MOUSE#USABILITY                 9  4.81
+BATTERY#OPERATION_PERFORMANCE  BATTERY#QUALITY                 6  3.98
+DISPLAY#DESIGN_FEATURES        LAPTOP#PORTABILITY              5  2.87
+LAPTOP#OPERATION_PERFORMANCE   MEMORY#DESIGN_FEATURES         10  2.18
+LAPTOP#DESIGN_FEATURES         LAPTOP#PORTABILITY             25  1.96
+LAPTOP#DESIGN_FEATURES         SOFTWARE#GENERAL               12  1.62
+LAPTOP#USABILITY               OS#GENERAL                      5  1.04
+LAPTOP#GENERAL                 LAPTOP#PRICE                   77  0.91
+
+8. OUT-OF-SCOPE SENTENCES
+set                 out-of-scope sentences  comparison nuance: out of scope  in scope, no opinion  in scope, opinionated
+------------------  ----------------------  -------------------------------  --------------------  ---------------------
+SemEval train (S1)  199 (8.1%)                                        28.6%                  5.8%                   6.1%
+SemEval test (T1)   113 (14.0%)                                       25.7%                  1.6%                   5.6%
+ACOS train (S4)     4 (0.1%)                                           0.0%                     –                   6.6%
+ACOS test (T2)      1 (0.1%)                                           0.0%                     –                   3.5%
+
+out-of-scope share of opinion-less sentences: S1 43.4%, T1 48.1%
+random S1 out-of-scope sentences:
+  Accordingly, I have decided to NEVER purchase another HP product (my five year old Compaq) lasted 5-years before the hard drive crashed.
+  My kids have to take their PCs in once a year to have them "de-bugged".
+  I like it better than my big Dell Laptop.
+  My husband got me this for Chrismas after getting me a very expensve laptop that did not work after 2 days.
+  Before we got this laptop, had a compaq pasaro for 5 years with no problems.
+  The Macbooks worth every penny.
+  Get a probook instead.
+  It was stubborn as hell, no amount of dust or slipping to the ground phased it.
+
+9. SEMEVAL VS ACOS ANNOTATION (plan D7.4)
+same sentence in both corpora (raw data, all splits): 20 distinct texts; identical labels: 18, different categories: 2
+
+sentence (SemEval text)  SemEval labels                          ACOS labels
+-----------------------  --------------------------------------  ----------------------------------------------------------------
+great battery life.      BATTERY#OPERATION_PERFORMANCE positive  BATTERY#OPERATION_PERFORMANCE positive; BATTERY#QUALITY positive
+Good battery life.       BATTERY#OPERATION_PERFORMANCE positive  BATTERY#QUALITY positive
+
+attribute distribution per entity, S1 vs S4 (Jensen-Shannon divergence: 0 = same, 1 = disjoint)
+entity              S1 n  S4 n  JS divergence  S1 most used attribute         S4 most used attribute
+------------------  ----  ----  -------------  -----------------------------  -----------------------------
+LAPTOP              1886  1810          0.045  GENERAL (32.3%)                GENERAL (40.8%)
+BATTERY               95   175          0.174  OPERATION_PERFORMANCE (89.5%)  OPERATION_PERFORMANCE (58.3%)
+DISPLAY              124   319          0.084  QUALITY (42.7%)                OPERATION_PERFORMANCE (30.4%)
+KEYBOARD              89   291          0.087  DESIGN_FEATURES (32.6%)        GENERAL (31.3%)
+CPU                   21    47          0.200  OPERATION_PERFORMANCE (81.0%)  OPERATION_PERFORMANCE (66.0%)
+SUPPORT              146    97          0.608  QUALITY (94.5%)                GENERAL (70.1%)
+OS                    73    98          0.212  GENERAL (47.9%)                OPERATION_PERFORMANCE (57.1%)
+SOFTWARE              86   150          0.130  GENERAL (36.0%)                OPERATION_PERFORMANCE (45.3%)
+MULTIMEDIA_DEVICES    46   104          0.230  QUALITY (56.5%)                OPERATION_PERFORMANCE (39.4%)
+
+BATTERY attributes: S1 OPERATION_PERFORMANCE 85, QUALITY 9, MISCELLANEOUS 1; S4 OPERATION_PERFORMANCE 102, GENERAL 45, QUALITY 23, DESIGN_FEATURES 5
+entities of opinions in sentences mentioning a touchpad / trackpad: SemEval train (S1): MOUSE 46, LAPTOP 7, KEYBOARD 4, DISPLAY 3; ACOS train (S4): KEYBOARD 57, HARDWARE 49, LAPTOP 12, DISPLAY 8
+opinion-less sentences: S4 0.1%, S1 18.6%
+ACOS implicit (NULL) terms: aspect 21.8%, opinion 27.8%
+sentences with an uppercase letter: S1 93.6%, T1 97.3%, S4 0.0%, T2 0.0%
+
+10. TRAIN -> TEST SHIFT
+train  test               category JS divergence  test categories unseen in train  OOV tokens  OOV word types
+-----  -----------------  ----------------------  -------------------------------  ----------  --------------
+S1     SemEval test (T1)                   0.053  7 cats / 13 sentences                  7.2%           33.0%
+S1     ACOS test (T2)                      0.194  23 cats / 103 sentences                7.4%           30.5%
+S4     ACOS test (T2)                      0.028  3 cats / 3 sentences                   4.7%           23.6%
+S1+S4  SemEval test (T1)                   0.092  0 cats / 0 sentences                   4.4%           21.8%
+S1+S4  ACOS test (T2)                      0.065  2 cats / 2 sentences                   3.5%           17.6%
+
+opinion-less sentences: S1 18.6% -> T1 29.1%; S4 0.1% -> T2 0.1%
+T1 categories unseen in S1: ['BATTERY#DESIGN_FEATURES', 'CPU#GENERAL', 'HARD_DISC#GENERAL', 'HARD_DISC#OPERATION_PERFORMANCE', 'OPTICAL_DRIVES#DESIGN_FEATURES', 'OPTICAL_DRIVES#GENERAL', 'POWER_SUPPLY#GENERAL']
+T1 categories unseen in S1 + S4: []
+
+figure: reports/figures/entity_shift.png
+
+11. NUANCES (D5.1 text slices, src.nuance_checker; unvalidated until D5.3)
+share of sentences
+set  negation  contrast  comparison  sarcasm_cand  numeric  question  conditional    any  elongated
+---  --------  --------  ----------  ------------  -------  --------  -----------  -----  ---------
+S1      23.8%     11.7%        7.9%          0.8%     3.6%      0.5%        10.2%  44.4%       0.2%
+T1      27.1%     14.0%        7.8%          2.4%     4.7%      2.4%         8.8%  48.3%       0.4%
+S4      23.9%     14.5%        6.6%          1.1%     4.3%      0.3%         7.1%  43.1%       0.1%
+T2      23.2%     12.8%        3.5%          1.5%     5.6%      0.6%         5.8%  40.1%       0.1%
+
+S1 opinion polarity with and without each nuance
+nuance                 opinions  negative  neutral  positive
+------------  -------  --------  --------  -------  --------
+negation      with          655     57.4%     8.9%     33.7%
+negation      without      2224     31.7%     5.8%     62.5%
+contrast      with          398     42.5%    18.6%     38.9%
+contrast      without      2481     36.8%     4.6%     58.6%
+comparison    with          181     39.8%    11.0%     49.2%
+comparison    without      2698     37.4%     6.2%     56.4%
+sarcasm_cand  with           30     60.0%    16.7%     23.3%
+sarcasm_cand  without      2849     37.3%     6.4%     56.3%
+numeric       with          114     43.9%     6.1%     50.0%
+numeric       without      2765     37.3%     6.5%     56.2%
+question      with            9    100.0%     0.0%      0.0%
+question      without      2870     37.4%     6.6%     56.1%
+conditional   with          278     48.2%     9.4%     42.4%
+conditional   without      2601     36.4%     6.2%     57.4%

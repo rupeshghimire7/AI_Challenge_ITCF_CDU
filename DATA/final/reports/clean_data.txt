@@ -1,0 +1,99 @@
+STAGE 2: CLEANING (scripts/clean_data.py)
+
+1. Before (*_merged.csv)
+split  source     sentences  out of scope  without opinion  opinion rows  sentence x category  categories
+-----  ---------  ---------  ------------  ---------------  ------------  -------------------  ----------
+train  semeval16       2481           199              459          2892                 2889          81
+train  acos            2902             0                0          3618                 3587         114
+test   semeval16        808           113              235           801                  799          67
+test   acos             811             0                0           989                  983          81
+
+   After (*_merged_cleaned.csv)
+split  source     sentences  out of scope  without opinion  opinion rows  sentence x category  categories
+-----  ---------  ---------  ------------  ---------------  ------------  -------------------  ----------
+train  semeval16       2468           199              459          2879                 2876          81
+train  acos            2884             4                4          3594                 3563         111
+test   semeval16        808           113              235           801                  799          67
+test   acos             810             1                1           987                  981          80
+
+2. Steps
+step  split  source     sentences  rows  what
+----  -----  ---------  ---------  ----  ---------------------------------------------------------------------------------------------------
+C1    train  semeval16         12    15  normalised: unicode_compat
+C1    train  semeval16         34    50  normalised: irregular_space
+C1    train  semeval16          5     7  normalised: list_marker
+C1    train  acos             120   131  normalised: list_marker
+C1    train  semeval16          4     7  normalised: elongation
+C1    train  acos               4     4  normalised: elongation
+C1    train  semeval16         13    17  normalised: punct_run
+C1    train  acos               1     1  normalised: punct_run
+C2    train  acos               2     2  Out_Of_Scope opinion dropped; the sentence keeps its other opinions
+C2    train  acos               4     4  Out_Of_Scope opinion dropped; sentence kept without opinions, out_of_scope=True
+C3    train  acos               4     4  sentence removed: ACOS copies of one text disagree on labels (all copies dropped)
+C1    test   semeval16         40    58  normalised: irregular_space
+C1    test   semeval16         28    39  normalised: list_marker
+C1    test   acos              41    44  normalised: list_marker
+C1    test   semeval16          3     4  normalised: elongation
+C1    test   acos               1     1  normalised: elongation
+C1    test   semeval16         12    15  normalised: punct_run
+C2    test   acos               1     1  Out_Of_Scope opinion dropped; sentence kept without opinions, out_of_scope=True
+C3    test   acos               1     1  sentence removed: same text as a SemEval sentence with different labels (SemEval kept)
+C4    train  semeval16         13    13  sentence removed: exact copy of a test sentence; near-duplicate of a test sentence (Jaccard >= 0.8)
+C4    train  acos              14    14  sentence removed: exact copy of a test sentence; near-duplicate of a test sentence (Jaccard >= 0.8)
+C5    train  semeval16          3     6  flagged polarity_conflict (one category, two polarities; both rows kept)
+C5    train  acos              31    62  flagged polarity_conflict (one category, two polarities; both rows kept)
+C5    test   semeval16          2     4  flagged polarity_conflict (one category, two polarities; both rows kept)
+C5    test   acos               6    12  flagged polarity_conflict (one category, two polarities; both rows kept)
+
+C3 SemEval sentences sharing a text but not labels (kept): 0
+
+3. Train/test leakage (C4, D2.5): train sentences by best character 5-gram Jaccard to any test sentence
+train source  best match in  exact  >= 0.9  >= 0.8
+------------  -------------  -----  ------  ------
+semeval16     semeval16          5       5       6
+semeval16     acos               6       6       7
+acos          semeval16          4       4       5
+acos          acos               7       7       9
+
+removed: >= 0.8; every removed sentence: reports/removed_sentences.csv
+
+4. CV folds (D3.1, SemEval train)
+fold  reviews  sentences  opinion rows
+----  -------  ---------  ------------
+   0       76        413           490
+   1      100        552           661
+   2       90        491           550
+   3      103        584           666
+   4       80        428           512
+
+5. Label space (label_space.json)
+possible categories: 198
+SemEval train categories: 81
+merged train categories (SemEval + ACOS): 125
+SemEval train categories with < 5 sentences: 31
+semeval16_test categories unseen in SemEval train: 7 ['BATTERY#DESIGN_FEATURES', 'CPU#GENERAL', 'HARD_DISC#GENERAL', 'HARD_DISC#OPERATION_PERFORMANCE', 'OPTICAL_DRIVES#DESIGN_FEATURES', 'OPTICAL_DRIVES#GENERAL', 'POWER_SUPPLY#GENERAL']
+acos_test categories unseen in SemEval train: 23 ['BATTERY#DESIGN_FEATURES', 'BATTERY#GENERAL', 'CPU#GENERAL', 'FANS_COOLING#GENERAL', 'GRAPHICS#OPERATION_PERFORMANCE', 'HARDWARE#DESIGN_FEATURES', 'HARDWARE#USABILITY', 'HARD_DISC#GENERAL', 'HARD_DISC#OPERATION_PERFORMANCE', 'KEYBOARD#MISCELLANEOUS', 'MEMORY#GENERAL', 'MEMORY#OPERATION_PERFORMANCE', 'MEMORY#USABILITY', 'MOTHERBOARD#GENERAL', 'OPTICAL_DRIVES#GENERAL', 'PORTS#CONNECTIVITY', 'PORTS#GENERAL', 'PORTS#USABILITY', 'POWER_SUPPLY#GENERAL', 'SHIPPING#GENERAL', 'SHIPPING#OPERATION_PERFORMANCE', 'SUPPORT#GENERAL', 'SUPPORT#OPERATION_PERFORMANCE']
+semeval16_test categories unseen in merged train: 0 []
+acos_test categories unseen in merged train: 2 ['KEYBOARD#MISCELLANEOUS', 'MOTHERBOARD#GENERAL']
+
+6. Integrity checks (C6)
+check                                                             result
+----------------------------------------------------------------  ------
+no sentence_id in both train and test                             ok
+train: unique (sentence, category, polarity) rows                 ok
+train: categories inside the 22 x 9 inventory                     ok
+train: valid polarity on opinion rows, none on opinion-less rows  ok
+train: one row per opinion-less sentence                          ok
+train: no sentence repeated with the same labels                  ok
+train: no empty text                                              ok
+train: no formatting artefact left (src.nuance_checker)           ok
+test: unique (sentence, category, polarity) rows                  ok
+test: categories inside the 22 x 9 inventory                      ok
+test: valid polarity on opinion rows, none on opinion-less rows   ok
+test: one row per opinion-less sentence                           ok
+test: no sentence repeated with the same labels                   ok
+test: no empty text                                               ok
+test: no formatting artefact left (src.nuance_checker)            ok
+no train sentence within Jaccard 0.8 of a test sentence           ok
+folds: 0-4 on SemEval train, -1 elsewhere                         ok
+T1 = the official 808 sentences / 801 opinions                    ok
