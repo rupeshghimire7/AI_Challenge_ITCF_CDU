@@ -1,0 +1,12 @@
+FINAL MODEL DATA (models/data.py)
+
+columns: sentence_id, review_id, split, text, prev_text, next_text, category, attribute, polarity
+polarity as stars: negative 0, neutral 2, positive 4
+
+train_final.csv
+  train      reviews 374  sentences 2109  opinions 2452  without opinion 390 (18.5%)  categories 80  stars 0:928 1:0 2:150 3:0 4:1374
+  validation reviews  75  sentences  366  opinions  434  without opinion  69 (18.9%)  categories 52  stars 0:153 1:0 2:38 3:0 4:243
+
+test_final.csv
+  test       reviews  80  sentences  808  opinions  801  without opinion 235 (29.1%)  categories 67  stars 0:274 1:0 2:46 3:0 4:481
+
