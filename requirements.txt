@@ -1,0 +1,16 @@
+# research environment (CPU). torch / torchvision from https://download.pytorch.org/whl/cpu
+torch>=2.6
+torchvision>=0.21          # EmbeddingGemma-2 is multimodal and imports a video processor
+transformers>=5.0
+sentence-transformers>=5.0
+huggingface_hub
+safetensors
+scikit-learn>=1.5
+numpy
+pandas
+pyarrow
+matplotlib
+jupyter
+nbconvert
+jupytext
+typesafe-sdk               # optional: Jev experiment (needs TYPESAFE_API_KEY / OpenRouter key)
