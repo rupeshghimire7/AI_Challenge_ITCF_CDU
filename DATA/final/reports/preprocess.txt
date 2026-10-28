@@ -4,11 +4,11 @@ unit cases passed: 79
 artefacts checked: html_entity, html_tag, unicode_compat, typographic_punct, invisible_char, irregular_space, list_marker, elongation, punct_run
 nuances checked: negation, contrast, comparison, sarcasm_cand, numeric, question, conditional
 
-cleaned sentences: 6970
-normalise idempotent: 6970/6970
-raw source text with an artefact left after normalise: 0/6970
+prepared sentences: 3283
+normalise idempotent: 3283/3283
+raw source text with an artefact left after normalise: 0/3283
 
 splitter vs SemEval gold boundaries (529 reviews)
-precision 0.991  recall 0.970  F1 0.980  reviews split exactly: 473/529
+precision 0.991  recall 0.970  F1 0.981  reviews split exactly: 473/529
 
-preprocess() throughput: 529 reviews -> 3226 sentences in 0.22s (14,998 sentences/s, 0.41 ms per review, single CPU thread)
+preprocess() throughput: 529 reviews -> 3233 sentences in 0.32s (10,251 sentences/s, 0.60 ms per review, single CPU thread)
