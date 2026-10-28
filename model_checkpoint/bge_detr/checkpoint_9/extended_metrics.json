@@ -1,0 +1,40 @@
+{
+ "validation": {
+  "joint_f1_negative": 0.5392491467576791,
+  "joint_f1_neutral": 0.4375,
+  "joint_f1_positive": 0.676923076923077,
+  "joint_macro_f1_sentiment": 0.551224074560252,
+  "detect_AP_micro": 0.7139404126007661,
+  "detect_AUC_micro": 0.9945750464226506,
+  "detect_mAP_macro": 0.6037465036489886,
+  "star_exact_acc": 0.8594470046082949,
+  "star_within1": 0.9447004608294931,
+  "star_rmse_expected": 0.5950055571411632,
+  "star_spearman": 0.8672599676652922,
+  "star_qwk": 0.9430533010039804,
+  "conf_ECE": 0.0402877271724736,
+  "sentence_exact_match": 0.44808743169398907,
+  "avg_pred_opinions": 1.210382513661202,
+  "avg_gold_opinions": 1.185792349726776,
+  "n_gold_pairs_in_label_space": 434
+ },
+ "test": {
+  "joint_f1_negative": 0.3970588235294118,
+  "joint_f1_neutral": 0.13953488372093023,
+  "joint_f1_positive": 0.5628140703517589,
+  "joint_macro_f1_sentiment": 0.36646925920070034,
+  "detect_AP_micro": 0.5318604306618178,
+  "detect_AUC_micro": 0.9843835128112484,
+  "detect_mAP_macro": 0.3872490573319103,
+  "star_exact_acc": 0.7915106117353309,
+  "star_within1": 0.9088639200998752,
+  "star_rmse_expected": 0.8822536774911945,
+  "star_spearman": 0.8109799078795711,
+  "star_qwk": 0.8792905581637976,
+  "conf_ECE": 0.05407892678458516,
+  "sentence_exact_match": 0.37995049504950495,
+  "avg_pred_opinions": 1.0198019801980198,
+  "avg_gold_opinions": 0.9913366336633663,
+  "n_gold_pairs_in_label_space": 801
+ }
+}
