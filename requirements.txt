@@ -10,6 +10,7 @@ numpy
 pandas
 pyarrow
 matplotlib
+streamlit>=1.40           # src/ui_streamlit.py
 jupyter
 nbconvert
 jupytext
