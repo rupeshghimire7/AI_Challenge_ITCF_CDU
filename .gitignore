@@ -10,3 +10,7 @@ logs/
 venv/
 .env/
 .env 
+
+
+# Documents for building the project
+docs/
