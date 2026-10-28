@@ -14,3 +14,5 @@ venv/
 
 # Documents for building the project
 docs/
+.streamlit/
+result/
