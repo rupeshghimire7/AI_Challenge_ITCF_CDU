@@ -10,6 +10,16 @@ Accepted annotation formats:
 For category/attribute labels, the model learns multi-label sentence-level presence.
 Polarity is learned for each category x attribute pair. This standalone trainer does not
 assume the private project-specific `models.data` or `src.config` APIs.
+
+Usage (from the repo root; the script imports custom_model from its own folder):
+    python models/custom_train.py --data DATA/final/train_final.csv --output-dir custom_results/run
+    python models/custom_train.py --data reviews.jsonl --epochs 15 --batch-size 32
+    python models/custom_train.py --data reviews.jsonl --resume custom_results/run/last.pt
+    python models/custom_train.py -h                                  every flag and its default
+The input is split at random into train, validation (--val-ratio, 0.15) and test (--test-ratio,
+0.10); a `split` column is ignored. Training stops early after --patience epochs without a better
+validation F1. Written to --output-dir: best.pt (best validation F1), last.pt (for --resume),
+train.log, test_metrics.json and labels.json. Run predictions with custom_inference.py.
 """
 from __future__ import annotations
 
@@ -31,7 +41,7 @@ from custom_model import CustomABSAModel
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description=__doc__)
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--data", required=True, help="CSV or JSONL training data")
     p.add_argument("--text-col", default="text")
     p.add_argument("--gold-col", default="gold", help="JSON annotation column for CSV")

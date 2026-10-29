@@ -1,4 +1,18 @@
-"""Load a custom three-head ABSA checkpoint and run inference."""
+"""Load a custom three-head ABSA checkpoint and run inference.
+
+Reads a checkpoint written by custom_train.py (best.pt or last.pt: weights, labels and model
+settings; the tokenizer comes from the Hugging Face cache or hub) and prints one JSON line per
+input sentence: {"text", "opinions"}. A category and an attribute count when their probability
+reaches --threshold (0.5); each such pair gets its most likely polarity, with category_score,
+attribute_score and polarity_score.
+
+Usage (from the repo root):
+    python models/custom_inference.py --checkpoint custom_results/run/best.pt --text "The battery dies fast."
+    python models/custom_inference.py --checkpoint custom_results/run/best.pt --input-file sentences.txt
+        --input-file      one sentence per line
+        --output-file     write the JSON lines to a file instead of printing them
+        --device          auto (default), cpu, cuda or mps
+"""
 from __future__ import annotations
 
 import argparse
@@ -72,7 +86,7 @@ def predict(text, model, tokenizer, labels, device, max_length=128, threshold=0.
 
 
 def main():
-    p = argparse.ArgumentParser(description=__doc__)
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--checkpoint", required=True)
     p.add_argument("--text", default="")
     p.add_argument("--input-file", default="", help="optional text file, one sentence per line")

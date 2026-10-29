@@ -7,6 +7,14 @@ Heads:
 
 Polarity is predicted per category/attribute pair, rather than once per sentence. This is
 important when a sentence contains multiple opinions with different polarities.
+
+Usage: nothing to run on its own. custom_train.py trains it and custom_inference.py loads it; in
+Python, from the models/ folder:
+    from custom_model import CustomABSAModel
+    model = CustomABSAModel("BAAI/bge-small-en-v1.5", num_categories=22, num_attributes=9)
+    out = model(input_ids, attention_mask)          # the three logits above
+    loss, parts = model.compute_loss(out, batch)    # batch: category_targets, attribute_targets,
+                                                    # polarity_targets (-100 where a pair has no label)
 """
 from __future__ import annotations
 
