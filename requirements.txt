@@ -1,17 +1,19 @@
-# research environment (CPU). torch / torchvision from https://download.pytorch.org/whl/cpu
-torch>=2.6
-torchvision>=0.21          # EmbeddingGemma-2 is multimodal and imports a video processor
-transformers>=5.0
-sentence-transformers>=5.0
-huggingface_hub
-safetensors
-scikit-learn>=1.5
-numpy
-pandas
-pyarrow
-matplotlib
-streamlit>=1.40           # src/ui_streamlit.py
-jupyter
-nbconvert
-jupytext
-typesafe-sdk               # optional: Jev experiment (needs TYPESAFE_API_KEY / OpenRouter key)
+# Python 3.12. The versions after "tested" are the ones this repository was last run with (2026-10-29).
+# CPU-only torch is smaller:  pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+
+# system: src/ (Streamlit app, CLI, gates, model inference) and scripts/
+torch>=2.6                  # tested 2.14.1
+transformers>=5.0           # tested 5.21.0  (BertModel / AutoModel, AutoTokenizer)
+tokenizers>=0.20            # tested 0.23.3  (the checkpoint's tokenizer.json)
+huggingface_hub>=0.30       # tested 2.3.0   (downloads BAAI/bge-small-en-v1.5 once for the domain gate)
+safetensors                 # tested 0.8.0
+numpy                       # tested 2.5.4
+pandas>=2.2                 # tested 3.1.0
+scikit-learn>=1.5           # tested 1.9.1   (metrics; AUC in src/domain_gate.py)
+scipy                       # tested 1.18.1  (Hungarian matching in models/set_detector.py)
+matplotlib                  # tested 3.11.2  (figures in scripts/eda.py and docs/diagrams)
+streamlit>=1.66             # tested 1.66.1  (top navigation, horizontal containers, pills)
+
+# model phase and notebooks (optional)
+sentence-transformers>=5.0  # tested 6.2.0   (only the optional CLS parity check in models/bge.py)
+jupyter                     # to open models/notebooks/*.ipynb locally
