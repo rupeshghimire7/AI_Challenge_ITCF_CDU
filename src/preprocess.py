@@ -3,12 +3,8 @@ text it serves are byte-identical (plan D2.4, 6.2.2).
 
 normalise(text)         D2.4 normalisation: repairs every nuance_checker artefact; case, emoji and spelling are kept
 split_sentences(text)   review text -> normalised sentences (abbreviation-safe splitter)
-<<<<<<< HEAD
 preprocess(review)      serving entry point: one record per sentence with its text, artefacts, nuances and aspect cues
 sentence_record(raw, clean)  that record for one sentence that is already split
-=======
-preprocess(review)      serving entry point: one record per sentence with its text, artefacts and nuances
->>>>>>> origin/main
 match_key(text)         comparison key for duplicates and train/test leakage (case, spacing and punctuation ignored)
 unescape_html(text)     HTML entities, decoded until stable
 """
@@ -19,10 +15,7 @@ import html
 import re
 import unicodedata
 
-<<<<<<< HEAD
 from src.aspect_terms import is_filler, named_entities, off_topic
-=======
->>>>>>> origin/main
 from src.nuance_checker import (BR, CONTROL, INVISIBLE, LETTER_RUN, LIST_MARKER, PUNCT_MAP, PUNCT_RUN, TAG, TYPOGRAPHIC,
                                 artefacts, nuances)
 
@@ -120,7 +113,6 @@ def split_sentences(text: str) -> list[str]:
 
 def preprocess(review: str) -> list[dict]:
     """Serving entry point: review text -> one record per sentence with `text` (normalised), `artefacts` (what
-<<<<<<< HEAD
     normalisation repaired in it), `nuances` (the D5.1 slices it contains) and the aspect cues of src.aspect_terms:
     `entities` (the laptop entities it names), `off_topic` (the non-laptop object it is about, or "") and `filler`
     (greetings / thanks only). The domain gates and the post-processing read these."""
@@ -131,7 +123,3 @@ def sentence_record(raw: str, clean: str) -> dict:
     """One sentence (raw and normalised) -> its preprocess() record."""
     return {"text": clean, "artefacts": artefacts(raw), "nuances": nuances(clean), "entities": named_entities(clean),
             "off_topic": off_topic(clean), "filler": is_filler(clean)}
-=======
-    normalisation repaired in it) and `nuances` (the D5.1 slices it contains)."""
-    return [{"text": clean, "artefacts": artefacts(raw), "nuances": nuances(clean)} for raw, clean in _segments(review)]
->>>>>>> origin/main

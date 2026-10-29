@@ -12,6 +12,7 @@ FILLER                words that carry no opinion and name no aspect (greetings,
 
 named_entities(text)  entities the text names, in ENTITY_TERMS order
 entity_matches(text)  the same, each with the word that names it: {"MOUSE": "trackpad", "MEMORY": "RAM"}
+listed_words(text)    every word of the text that some entity's word list matches ("Apple mac mini" -> apple, mac)
 off_topic(text)       the non-laptop object the sentence is about, or "": the object is the subject ("My printer keeps
                       jamming") or what is loved / hated / bought ("I love my new phone"), the laptop is not named, and the
                       sentence compares nothing. Merely mentioning an object is not enough: laptop reviews talk about
@@ -88,6 +89,10 @@ _WORD = re.compile(r"[^\W\d_]+")
 
 def entity_matches(text: str) -> dict[str, str]:
     return {e: m.group(0) for e, rx in _ENTITY_RX.items() if (m := rx.search(text))}
+
+
+def listed_words(text: str) -> set[str]:
+    return {w.lower() for rx in _ENTITY_RX.values() for m in rx.finditer(text) for w in m.group(0).split()}
 
 
 def named_entities(text: str) -> list[str]:
